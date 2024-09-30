@@ -9,13 +9,16 @@ import java.util.Objects;
 public class Student {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @Column(name = "id", nullable = false)
     private Long id;
 
     private String name;
     private int age;
+
     public Student() {
     }
+
     public Student(Long id, String name, int age) {
         this.id = id;
         this.name = name;

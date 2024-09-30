@@ -9,14 +9,17 @@ import java.util.Objects;
 public class Faculty {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @Column(name = "id", nullable = false)
     private int id;
     private String name;
     private String color;
+
     public Faculty() {
     }
-    public Faculty(int id, String name, String color) {
-        this.id = id;
+
+    public Faculty(String name, String color) {
+//        this.id = id;
         this.name = name;
         this.color = color;
     }
