@@ -1,8 +1,10 @@
 package ru.hogwarts.school.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import ru.hogwarts.school.model.Student;
+import ru.hogwarts.school.repositories.StudentRepository;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -12,40 +14,36 @@ import java.util.stream.Collectors;
 @Service
 public class StudentService {
 
-    Map<Long, Student> students = new HashMap<>();
+    private final StudentRepository studentRepository;
 
-    private long idCounter = 0;
-
-    public Collection<Student> getAllStudent() {
-        return students.values();
+    @Autowired
+    public StudentService(StudentRepository studentRepository) {
+        this.studentRepository = studentRepository;
     }
 
-    public Collection<Student> getStudentByAge(int age) {
-        return students.values()
-                        .stream()
-                .filter(student -> student.getAge() == age).collect(Collectors.toList());
-    }
 
     public Student createStudent(Student student) {
-        student.setId(++idCounter);
-        students.put(student.getId(), student);
-        return student;
+        return studentRepository.save(student);
     }
 
     public Student findStudent(long id) {
-        return students.get(id);
+        return studentRepository.findById(id).get();
     }
 
     public Student editStudent(Student student) {
-        if (students.containsKey(student.getId())) {
-            students.put(student.getId(), student);
-            return student;
-        }
-        return null;
+        return studentRepository.save(student);
     }
 
-    public Student deleteStudent(long id) {
-        return students.remove(id);
+    public void deleteStudent(long id) {
+        studentRepository.deleteById(id);
+    }
+
+    public Collection<Student> getAllStudent() {
+        return studentRepository.findAll();
+    }
+
+    public Collection<Student> getStudentByAge(int age) {
+        return studentRepository.getStudentByAge(age);
     }
 
 }
