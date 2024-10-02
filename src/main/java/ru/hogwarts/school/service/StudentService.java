@@ -12,7 +12,6 @@ public class StudentService {
 
     private final StudentRepository studentRepository;
 
-    @Autowired
     public StudentService(StudentRepository studentRepository) {
         this.studentRepository = studentRepository;
     }
@@ -40,6 +39,14 @@ public class StudentService {
 
     public Collection<Student> getStudentByAge(int age) {
         return studentRepository.getStudentByAge(age);
+    }
+
+    public Collection<Student> findStudentBetweenAge(int minAge, int maxAge) {
+        return studentRepository.findByAgeBetween(minAge, maxAge);
+    }
+
+    public Collection<Student> findStudentByFacultyId(long facultyId) {
+        return studentRepository.findStudentByFacultyId(facultyId);
     }
 
 }
