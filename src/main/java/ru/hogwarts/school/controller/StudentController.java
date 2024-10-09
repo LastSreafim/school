@@ -2,13 +2,17 @@ package ru.hogwarts.school.controller;
 
 import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import ru.hogwarts.school.model.Faculty;
 import ru.hogwarts.school.model.Student;
+import ru.hogwarts.school.service.AvatarService;
 import ru.hogwarts.school.service.FacultyService;
 import ru.hogwarts.school.service.StudentService;
 
+import java.io.IOException;
 import java.util.Collection;
 
 @RestController
@@ -19,10 +23,15 @@ public class StudentController {
 
     private final FacultyService facultyService;
 
+    private final AvatarService avatarService;
+
     @Autowired
-    public StudentController(StudentService studentService, FacultyService facultyService) {
+    public StudentController(StudentService studentService,
+                             FacultyService facultyService,
+                             AvatarService avatarService) {
         this.studentService = studentService;
         this.facultyService = facultyService;
+        this.avatarService = avatarService;
     }
 
     @GetMapping("{id}") //GET
@@ -91,5 +100,15 @@ public class StudentController {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(faculty);
+    }
+
+    @PostMapping(value = "/{id}/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<String> uploaderAvatar(@PathVariable Long id,
+                                                 @RequestParam("avatar") MultipartFile avatar) throws IOException {
+        if (avatar.getSize() >= 1024 * 300) {
+            return ResponseEntity.badRequest().body("Your avatar size is too big");
+        }
+        avatarService.uploadAvatar(id, avatar);
+        return ResponseEntity.ok().build();
     }
 }
