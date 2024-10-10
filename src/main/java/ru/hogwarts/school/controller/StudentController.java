@@ -24,7 +24,6 @@ public class StudentController {
 
     private final StudentService studentService;
 
-    private final FacultyService facultyService;
 
     private AvatarService avatarService;
 
@@ -32,7 +31,6 @@ public class StudentController {
     public StudentController(StudentService studentService,
                              FacultyService facultyService) {
         this.studentService = studentService;
-        this.facultyService = facultyService;
     }
 
     @GetMapping("{id}") //GET
@@ -45,9 +43,10 @@ public class StudentController {
 
     }
 
-    @PostMapping   //POST
-    public Student createStudent(@RequestBody Student student) {
-        return studentService.createStudent(student);
+    @PostMapping //POST
+    public ResponseEntity<Student> createStudent(@RequestBody Student student) {
+        Student savedStudent = studentService.createStudent(student);
+        return ResponseEntity.ok(savedStudent);
     }
 
     @PutMapping //PUT

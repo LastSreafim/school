@@ -22,13 +22,15 @@ import java.nio.file.Path;
 public class AvatarController {
 
     private Avatar avatar;
+
     private AvatarService avatarService;
 
     @Autowired
     public AvatarController(AvatarService avatarService) {
         this.avatarService = avatarService;
     }
-//добавление файла в базу данных и директорию
+
+    //добавление файла в базу данных и директорию
     @PostMapping(value = "/{studentId}/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> uploaderAvatar(@PathVariable Long studentId,
                                                  @RequestParam("avatar") MultipartFile avatar) throws IOException {
