@@ -1,4 +1,4 @@
-package ru.hogwarts.school.controller;
+package ru.hogwarts.school.controller.testRestTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -13,6 +13,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import ru.hogwarts.school.model.Faculty;
 import ru.hogwarts.school.model.Student;
 import ru.hogwarts.school.service.FacultyService;
 import ru.hogwarts.school.service.StudentService;
@@ -48,8 +49,11 @@ class StudentControllerTest {
 
     @Test
     public void testPostStudent() throws Exception {
+
         Student student = new Student(1L, "John", 20);
+
         when(studentService.createStudent(student)).thenReturn(student);
+
         Assertions.
                 assertThat(this.restTemplate.postForObject("http://localhost:" + port + "/students",
                         student, String.class)).isEqualTo("{\"id\":1,\"name\":\"John\",\"age\":20,\"faculty\":null}");
@@ -58,9 +62,13 @@ class StudentControllerTest {
     @Test
     public void testDeleteStudent() throws Exception {
         Long studentId = 1L;
+
         doNothing().when(studentService).deleteStudent(studentId);
+
         ResponseEntity<Void> response = restTemplate.exchange("/students/" + studentId, HttpMethod.DELETE, null, Void.class);
+
         assertEquals(HttpStatus.OK, response.getStatusCode());
+
         verify(studentService, times(1)).deleteStudent(studentId);
     }
 
@@ -72,28 +80,38 @@ class StudentControllerTest {
         student.setAge(17);
 
         Student updatedStudent = new Student();
+
         updatedStudent.setId(2L);
         updatedStudent.setName("Updated Name");
         updatedStudent.setAge(17);
+
         when(studentService.editStudent(any(Student.class))).thenReturn(updatedStudent);
+
         HttpEntity<Student> request = new HttpEntity<>(updatedStudent);
         ResponseEntity<Student> response = restTemplate.exchange("/students",
                 HttpMethod.PUT, request, Student.class);
+
         assertEquals(HttpStatus.OK, response.getStatusCode());
+
         assertEquals(updatedStudent, response.getBody());
+
         verify(studentService, times(1)).editStudent(any(Student.class));
     }
 
     @Test
     public void testGetAllStudents() throws Exception {
         Collection<Student> students = new ArrayList<>();
+
         Student student1 = new Student(1L, "John", 20);
         Student student2 = new Student(2L, "Any", 23);
         Student student3 = new Student(3L, "Sergei", 27);
+
         students.add(student1);
         students.add(student2);
         students.add(student3);
+
         when(studentService.getAllStudent()).thenReturn(students);
+
         Assertions.
                 assertThat(this.restTemplate.getForObject("http://localhost:" + port + "/students", String.class))
                 .isNotNull();
@@ -102,15 +120,20 @@ class StudentControllerTest {
     @Test
     public void testFilteredByAge() throws Exception {
         Collection<Student> students = new ArrayList<>();
+
         Student student1 = new Student(1L, "John", 20);
         Student student2 = new Student(2L, "Any", 20);
         Student student3 = new Student(3L, "Sergei", 20);
+
         students.add(student1);
         students.add(student2);
         students.add(student3);
+
         when(studentService.getStudentByAge(20)).thenReturn(students);
+
         ObjectWriter ow = new ObjectMapper().writer();
         String json = ow.writeValueAsString(students);
+
         Assertions.
                 assertThat(this.restTemplate.getForObject("http://localhost:" + port + "/students/filter/20", String.class))
                 .isEqualTo(json);
@@ -119,19 +142,71 @@ class StudentControllerTest {
     @Test
     public void testFindStudentBetweenAge() throws Exception {
         Collection<Student> students = new ArrayList<>();
+
         Student student1 = new Student(1L, "John", 20);
         Student student2 = new Student(2L, "Any", 23);
         Student student3 = new Student(3L, "Sergei", 27);
+
         students.add(student1);
         students.add(student2);
         students.add(student3);
+
         when(studentService.findStudentBetweenAge(20, 28)).thenReturn(students);
+
         ObjectWriter ow = new ObjectMapper().writer();
         String json = ow.writeValueAsString(students);
+
         Assertions.
                 assertThat(this.restTemplate.getForObject("http://localhost:" + port
                         + "/students/filter/between?minAge=20&maxAge=28", String.class))
                 .isEqualTo(json);
     }
+
+    @Test
+    public void testGetStudentByFaculty() throws Exception {
+        Collection<Student> students = new ArrayList<>();
+
+        Student student1 = new Student(1L, "John", 20);
+        Student student2 = new Student(2L, "Any", 23);
+        Student student3 = new Student(3L, "Sergei", 27);
+
+        students.add(student1);
+        students.add(student2);
+        students.add(student3);
+
+        Faculty faculty = new Faculty(1, "Anything", "AnyColor");
+
+        when(studentService.findStudentByFacultyId(1)).thenReturn(students);
+
+        ObjectWriter ow = new ObjectMapper().writer();
+        String json = ow.writeValueAsString(students);
+        String jsonFaculty = ow.writeValueAsString(students);
+
+        Assertions.
+                assertThat(this.restTemplate.getForObject("http://localhost:" + port + "/students/faculty/1", String.class))
+                .isEqualTo(json, jsonFaculty);
+    }
+
+    @Test
+    public void testGetFacultyByStudent() throws Exception {
+
+        Faculty faculty = new Faculty();
+        faculty.setId(1);
+        faculty.setName("Anything");
+
+        Student student = new Student();
+        student.setId(1L);
+        student.setFaculty(faculty);
+
+        when(studentService.findStudent(1L)).thenReturn(student);
+
+        ObjectWriter ow = new ObjectMapper().writer();
+        String json = ow.writeValueAsString(faculty);
+
+        Assertions.
+                assertThat(this.restTemplate.getForObject("http://localhost:" + port + "/students/1/faculty", String.class))
+                .isEqualTo(json);
+    }
+
 
 }
