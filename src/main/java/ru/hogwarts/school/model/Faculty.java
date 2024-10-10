@@ -20,13 +20,17 @@ public class Faculty {
     private Collection<Student> students;
 
 
-    public Faculty(String name, String color) {
+    public Faculty(int id,String name, String color) {
+        this.id = id;
         this.name = name;
         this.color = color;
     }
 
     public Faculty() {
 
+    }
+
+    public Faculty(long l, String anything, String anyColor) {
     }
 
     public int getId() {
