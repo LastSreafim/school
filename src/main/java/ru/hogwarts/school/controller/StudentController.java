@@ -95,6 +95,20 @@ public class StudentController {
         return ResponseEntity.ok(faculty);
     }
 
+    @GetMapping("/countStudents")
+    public ResponseEntity<Integer> countStudents() {
+        return ResponseEntity.ok(studentService.getStudentsCount());
+    }
+
+    @GetMapping("/getAverageAge")
+    public ResponseEntity<Double> getAverageAge() {
+        return ResponseEntity.ok(studentService.getAverageAge());
+    }
+
+    @GetMapping("/findLastFiveStudents")
+    public ResponseEntity<Collection<Student>> findLastFiveStudents() {
+        return ResponseEntity.ok(studentService.findLastFiveStudents());
+    }
 
 
 }

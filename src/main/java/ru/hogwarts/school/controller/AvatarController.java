@@ -2,6 +2,9 @@ package ru.hogwarts.school.controller;
 
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -9,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import ru.hogwarts.school.model.Avatar;
+import ru.hogwarts.school.repositories.AvatarRepository;
 import ru.hogwarts.school.service.AvatarService;
 
 import java.io.IOException;
@@ -21,13 +25,18 @@ import java.nio.file.Path;
 @RequestMapping("Avatar")
 public class AvatarController {
 
+
+    private AvatarRepository avatarRepository;
+
     private Avatar avatar;
 
     private AvatarService avatarService;
 
+
     @Autowired
-    public AvatarController(AvatarService avatarService) {
+    public AvatarController(AvatarService avatarService, AvatarRepository avatarRepository) {
         this.avatarService = avatarService;
+        this.avatarRepository = avatarRepository;
     }
 
     //добавление файла в базу данных и директорию
@@ -65,4 +74,13 @@ public class AvatarController {
         headers.setContentLength(avatar.getData().length);
         return ResponseEntity.status(HttpStatus.OK).headers(headers).body(avatar.getData());
     }
+
+    @GetMapping("/pagination")
+    public ResponseEntity<Page<Avatar>> avatarsByPages(@RequestParam int pageNumber, @RequestParam int pageSize) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        Page<Avatar> avatars = avatarRepository.findAll(pageable);
+        return ResponseEntity.ok(avatars);
+    }
+
+
 }
