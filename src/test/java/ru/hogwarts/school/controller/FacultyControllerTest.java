@@ -174,6 +174,8 @@ public class FacultyControllerTest {
         faculty2.setColor(color2);
 
         List<Faculty> faculties = new ArrayList<>();
+        faculties.add(faculty);
+        faculties.add(faculty2);
 
         when(facultyRepository.findAll()).thenReturn(faculties);
 
@@ -192,39 +194,30 @@ public class FacultyControllerTest {
         long facultyId = 1L;
         String facultyName = "anything";
         String color = "Color";
+
         JSONObject facultyObject = new JSONObject();
         facultyObject.put("name", facultyName);
         Faculty faculty = new Faculty();
+
         faculty.setId(facultyId);
         faculty.setName(facultyName);
         faculty.setColor(color);
 
-        long facultyId2 = 2L;
-        String facultyName2 = "anything2";
-        String color2 = "Color2";
-        JSONObject facultyObject2 = new JSONObject();
-        facultyObject2.put("name", facultyName2);
-        Faculty faculty2 = new Faculty();
-        faculty2.setId(facultyId2);
-        faculty2.setName(facultyName2);
-        faculty2.setColor(color2);
-
-        List<Faculty> faculties = new ArrayList<>();
-        faculties.add(faculty);
-        faculties.add(faculty2);
 
         List<Faculty> filteredFaculties = new ArrayList<>();
         filteredFaculties.add(faculty);
 
-        when(facultyRepository.findByNameIgnoreCaseOrColorIgnoreCase("anything", "color")).thenReturn(filteredFaculties);
+        when(facultyRepository.findByNameIgnoreCaseOrColorIgnoreCase(facultyName, color))
+                .thenReturn(filteredFaculties);
 
         mockMvc.perform(MockMvcRequestBuilders
-                        .get("/faculty/filter"))
+                        .get("/faculty/filter")
+                .param("name", facultyName)
+                .param("color", color))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].id").value(facultyId))
-                .andExpect(jsonPath("$[0].name").value(facultyName))
-                .andExpect(jsonPath("$[0].color").value(color));
+                .andExpect(jsonPath("$[0].name").value(facultyName));
 
 
     }

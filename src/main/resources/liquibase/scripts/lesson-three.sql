@@ -1,4 +1,7 @@
 -- liquibase formatted sql
--- changeset nazar: 2
-CREATE INDEX student_name_idx ON student (name);
-CREATE INDEX faculty_nameAndColor_idx ON faculty(name, color);
+
+--changeset nazar:1
+CREATE INDEX IF NOT EXISTS student_name_idx ON student (name);
+
+--changeset nazar:2
+CREATE INDEX IF NOT EXISTS faculty_nameAndColor_idx ON faculty(name, color);
