@@ -9,6 +9,9 @@ import ru.hogwarts.school.repositories.StudentRepository;
 import java.util.Collection;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 @Service
 public class StudentService {
@@ -57,7 +60,7 @@ public class StudentService {
     }
 
     public Collection<Student> getStudentByAge(int age) {
-       logger.info("Was invoked method for get student by age {}", age);
+        logger.info("Was invoked method for get student by age {}", age);
         return studentRepository.getStudentByAge(age);
     }
 
@@ -86,5 +89,57 @@ public class StudentService {
         return studentRepository.findLastFiveStudents();
     }
 
+    public List<String> getNamesStartingWithA() {
+        logger.info("Was invoked method for get student names starting with A");
+        return studentRepository.findAll().stream()
+                .map(Student::getName)
+                .filter(name -> name.startsWith("А"))
+                .map(String::toUpperCase)
+                .sorted()
+                .collect(Collectors.toList());
+    }
+
+    public Double getAverageAgeWithStream() {
+        logger.info("Was invoked method for get student average age with stream");
+        return studentRepository.findAll().stream()
+                .mapToDouble(Student::getAge)
+                .average()
+                .orElse(0.0);
+    }
+
+
+    public int oldGetSum() {
+        logger.info("Was invoked method for old get student sum");
+
+        long startTime = System.nanoTime();
+
+        int sum = Stream.iterate(1, a -> a + 1)
+                .limit(1_000_000)
+                .reduce(0, (a, b) -> a + b);
+
+        long endTime = System.nanoTime();
+        long duration = endTime - startTime;
+        System.out.println("Время выполнения oldGetSum: " + duration + " мс");
+
+        return sum;
+        //32455600 мс
+    }
+
+
+    public int getSum() {
+        logger.info("Was invoked method for get sum");
+
+        long startTime = System.nanoTime();
+
+        int sum = IntStream.rangeClosed(1, 1_000_000)
+                .sum();
+
+        long endTime = System.nanoTime();
+        long duration = endTime - startTime;
+        System.out.println("Время выполнения getSum: " + duration + " мс");
+
+        return sum;
+        //5753400 мс
+    }
 
 }

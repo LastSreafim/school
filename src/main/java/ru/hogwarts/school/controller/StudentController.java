@@ -1,15 +1,20 @@
 package ru.hogwarts.school.controller;
 
+import jakarta.transaction.Transactional;
+import org.antlr.v4.runtime.tree.pattern.ParseTreePattern;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.hogwarts.school.model.Faculty;
 import ru.hogwarts.school.model.Student;
+import ru.hogwarts.school.repositories.StudentRepository;
 import ru.hogwarts.school.service.AvatarService;
 import ru.hogwarts.school.service.FacultyService;
 import ru.hogwarts.school.service.StudentService;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("students")
@@ -17,13 +22,15 @@ public class StudentController {
 
     private final StudentService studentService;
 
+    private final StudentRepository studentRepository;
 
     private AvatarService avatarService;
 
     @Autowired
     public StudentController(StudentService studentService,
-                             FacultyService facultyService) {
+                             FacultyService facultyService, StudentRepository studentRepository) {
         this.studentService = studentService;
+        this.studentRepository = studentRepository;
     }
 
     @GetMapping("{id}") //GET
@@ -37,6 +44,7 @@ public class StudentController {
     }
 
     @PostMapping //POST
+    @Transactional
     public ResponseEntity<Student> createStudent(@RequestBody Student student) {
         Student savedStudent = studentService.createStudent(student);
         return ResponseEntity.ok(savedStudent);
@@ -110,5 +118,14 @@ public class StudentController {
         return ResponseEntity.ok(studentService.findLastFiveStudents());
     }
 
+    @GetMapping("/names-starting-with-a")
+    public ResponseEntity<List<String>> getNamesStartingWithA() {
+        return ResponseEntity.ok(studentService.getNamesStartingWithA());
+    }
+
+    @GetMapping("/getAverageAgeWithStream")
+    public ResponseEntity<Double> getAverageAgeWithStream() {
+        return ResponseEntity.ok(studentService.getAverageAgeWithStream());
+    }
 
 }

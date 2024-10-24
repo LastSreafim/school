@@ -60,6 +60,11 @@ public class FacultyController {
         return ResponseEntity.ok(facultyService.getFacultyByNameOrColor(name, color));
     }
 
+    @GetMapping("/get-longest-name")
+    public ResponseEntity<String> getLongestName() {
+        return ResponseEntity.ok(facultyService.getLongestName());
+    }
+
 
 }
 
