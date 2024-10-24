@@ -1,14 +1,19 @@
 package ru.hogwarts.school.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import ru.hogwarts.school.model.Student;
 import ru.hogwarts.school.repositories.StudentRepository;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 public class StudentService {
+
+    private static final Logger logger = LoggerFactory.getLogger(StudentService.class);
 
     private final StudentRepository studentRepository;
 
@@ -18,46 +23,66 @@ public class StudentService {
 
 
     public Student createStudent(Student student) {
+        logger.info("Was invoked method for create student");
         return studentRepository.save(student);
     }
 
     public Student findStudent(long id) {
-        return studentRepository.findById(id).get();
+        logger.info("Was invoked method for find student with id");
+        try {
+            return studentRepository.findById(id).orElseThrow(() -> {
+                logger.error("There is no student with id = {}", id); //тут
+                return new NoSuchElementException("Student not found with id: " + id);
+            });
+        } catch (Exception e) {
+            logger.error("Error while finding student with id: {}", id, e);
+            throw e;
+        }
+
     }
 
     public Student editStudent(Student student) {
+        logger.info("Was invoked method for edit student with id");
         return studentRepository.save(student);
     }
 
     public void deleteStudent(long id) {
+        logger.info("Was invoked method for delete student with id: {}", id);
         studentRepository.deleteById(id);
     }
 
     public Collection<Student> getAllStudent() {
+        logger.info("Was invoked method for get all students");
         return studentRepository.findAll();
     }
 
     public Collection<Student> getStudentByAge(int age) {
+       logger.info("Was invoked method for get student by age {}", age);
         return studentRepository.getStudentByAge(age);
     }
 
     public Collection<Student> findStudentBetweenAge(int minAge, int maxAge) {
+        logger.info("Was invoked method for get student between age");
         return studentRepository.findByAgeBetween(minAge, maxAge);
     }
 
     public Collection<Student> findStudentByFacultyId(long facultyId) {
+        logger.info("Was invoked method for get student by faculty id {}", facultyId);
         return studentRepository.findStudentByFacultyId(facultyId);
     }
 
     public Integer getStudentsCount() {
+        logger.info("Was invoked method for get student count");
         return studentRepository.getStudentsCount();
     }
 
     public Double getAverageAge() {
+        logger.info("Was invoked method for get student average age");
         return studentRepository.getAverageAge();
     }
 
     public List<Student> findLastFiveStudents() {
+        logger.info("Was invoked method for get last five students");
         return studentRepository.findLastFiveStudents();
     }
 
