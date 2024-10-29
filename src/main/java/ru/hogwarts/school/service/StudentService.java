@@ -142,4 +142,81 @@ public class StudentService {
         //5753400 мс
     }
 
+    public void getStudentNameParallel() {
+
+        logger.info("Was invoked method for get student name parallel");
+
+        logger.info("Main thread was started");
+        System.out.println(studentRepository.findStudentById(1L).getName());
+        System.out.println(studentRepository.findStudentById(2L).getName());
+
+
+        logger.info("Thread1 was started");
+        Thread thread1 = new Thread(() -> {
+            System.out.println(studentRepository.findStudentById(3L).getName());
+            System.out.println(studentRepository.findStudentById(4L).getName());
+
+        });
+
+        thread1.start();
+
+        logger.info("Thread2 was started");
+        Thread thread2 = new Thread(() -> {
+            System.out.println(studentRepository.findStudentById(5L).getName());
+            System.out.println(studentRepository.findStudentById(6L).getName());
+        });
+
+        thread2.start();
+
+        try {
+            thread1.join();
+            thread2.join();
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void synchronizedGetStudentName() {
+        logger.info("Was invoked method for get student name synchronized");
+
+        synchronizedToPrint(1L);
+        synchronizedToPrint(2L);
+
+
+
+        Thread thread1 = new Thread(() -> {
+            synchronizedToPrint(3L);
+            synchronizedToPrint(4L);
+
+        });
+
+        thread1.start();
+
+        Thread thread2 = new Thread(() -> {
+            synchronizedToPrint(5L);
+            synchronizedToPrint(6L);
+        });
+
+        thread2.start();
+
+        try {
+            thread1.join();
+            thread2.join();
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    public synchronized void synchronizedToPrint(Long id) {
+        System.out.println(studentRepository.findStudentById(id).getName());
+    }
+
+
 }
+
+
+
+
