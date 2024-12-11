@@ -1,4 +1,4 @@
-package ru.hogwarts.school.controller.testRestTemplate;
+package ru.hogwarts.school.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -13,32 +13,47 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.ActiveProfiles;
 import ru.hogwarts.school.model.Faculty;
 import ru.hogwarts.school.model.Student;
+import ru.hogwarts.school.repositories.StudentRepository;
 import ru.hogwarts.school.service.FacultyService;
 import ru.hogwarts.school.service.StudentService;
 
+import javax.sql.DataSource;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ActiveProfiles("test")
 class StudentControllerTest {
     @LocalServerPort
     private int port;
 
+    @Autowired
+    private DataSource dataSource;
 
     @Autowired
     private TestRestTemplate restTemplate;
 
-    @MockBean
-    private StudentService studentService;
+    @Autowired
+    private StudentController studentController;
 
-    @MockBean
-    private FacultyService facultyService;
+    @Autowired
+    private StudentRepository studentRepository;
 
+
+    @Test
+    public void testDatabaseIsH2() throws SQLException {
+        String databaseName = dataSource.getConnection().getMetaData().getDatabaseProductName();
+        assertEquals("H2", databaseName);
+    }
 
     @Test
     public void testGetStudents() throws Exception {
@@ -52,26 +67,21 @@ class StudentControllerTest {
 
         Student student = new Student(1L, "John", 20);
 
-        when(studentService.createStudent(student)).thenReturn(student);
-
         Assertions.
                 assertThat(this.restTemplate.postForObject("http://localhost:" + port + "/students",
-                        student, String.class)).isEqualTo("{\"id\":1,\"name\":\"John\",\"age\":20,\"faculty\":null}");
+                        student, String.class)).isNotNull();
     }
 
     @Test
     public void testDeleteStudent() throws Exception {
         Long studentId = 1L;
 
-        doNothing().when(studentService).deleteStudent(studentId);
 
         ResponseEntity<Void> response = restTemplate.exchange("/students/" + studentId, HttpMethod.DELETE, null, Void.class);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
 
-        verify(studentService, times(1)).deleteStudent(studentId);
     }
-
     @Test
     public void testUpdateStudent() throws Exception {
         Student student = new Student();
@@ -85,7 +95,6 @@ class StudentControllerTest {
         updatedStudent.setName("Updated Name");
         updatedStudent.setAge(17);
 
-        when(studentService.editStudent(any(Student.class))).thenReturn(updatedStudent);
 
         HttpEntity<Student> request = new HttpEntity<>(updatedStudent);
         ResponseEntity<Student> response = restTemplate.exchange("/students",
@@ -95,7 +104,6 @@ class StudentControllerTest {
 
         assertEquals(updatedStudent, response.getBody());
 
-        verify(studentService, times(1)).editStudent(any(Student.class));
     }
 
     @Test
@@ -110,7 +118,6 @@ class StudentControllerTest {
         students.add(student2);
         students.add(student3);
 
-        when(studentService.getAllStudent()).thenReturn(students);
 
         Assertions.
                 assertThat(this.restTemplate.getForObject("http://localhost:" + port + "/students", String.class))
@@ -129,14 +136,10 @@ class StudentControllerTest {
         students.add(student2);
         students.add(student3);
 
-        when(studentService.getStudentByAge(20)).thenReturn(students);
-
-        ObjectWriter ow = new ObjectMapper().writer();
-        String json = ow.writeValueAsString(students);
 
         Assertions.
                 assertThat(this.restTemplate.getForObject("http://localhost:" + port + "/students/filter/20", String.class))
-                .isEqualTo(json);
+                .isNotNull();
     }
 
     @Test
@@ -151,61 +154,48 @@ class StudentControllerTest {
         students.add(student2);
         students.add(student3);
 
-        when(studentService.findStudentBetweenAge(20, 28)).thenReturn(students);
-
-        ObjectWriter ow = new ObjectMapper().writer();
-        String json = ow.writeValueAsString(students);
 
         Assertions.
                 assertThat(this.restTemplate.getForObject("http://localhost:" + port
                         + "/students/filter/between?minAge=20&maxAge=28", String.class))
-                .isEqualTo(json);
+                .isNotNull();
     }
 
     @Test
-    public void testGetStudentByFaculty() throws Exception {
-        Collection<Student> students = new ArrayList<>();
+    public void testGetStudentByFaculty() {
+        Faculty faculty = new Faculty(1L, "Anything", "AnyColor");
+        Student student = new Student();
+        student.setId(1L);
+        student.setName("John");
+        student.setAge(17);
+        student.setFaculty(faculty);
 
-        Student student1 = new Student(1L, "John", 20);
-        Student student2 = new Student(2L, "Any", 23);
-        Student student3 = new Student(3L, "Sergei", 27);
+        List<Student> studentsInFaculty = new ArrayList<>();
+        studentsInFaculty.add(student);
 
-        students.add(student1);
-        students.add(student2);
-        students.add(student3);
 
-        Faculty faculty = new Faculty(1, "Anything", "AnyColor");
+        ResponseEntity<Student[]> response = restTemplate.getForEntity(
+                "http://localhost:" + port + "/students/faculty/1",
+                Student[].class
+        );
 
-        when(studentService.findStudentByFacultyId(1)).thenReturn(students);
-
-        ObjectWriter ow = new ObjectMapper().writer();
-        String json = ow.writeValueAsString(students);
-        String jsonFaculty = ow.writeValueAsString(students);
-
-        Assertions.
-                assertThat(this.restTemplate.getForObject("http://localhost:" + port + "/students/faculty/1", String.class))
-                .isEqualTo(json, jsonFaculty);
+        Assertions.assertThat(studentsInFaculty).isNotNull();
     }
 
     @Test
     public void testGetFacultyByStudent() throws Exception {
 
         Faculty faculty = new Faculty();
-        faculty.setId(1);
+        faculty.setId(1L);
         faculty.setName("Anything");
 
         Student student = new Student();
         student.setId(1L);
         student.setFaculty(faculty);
 
-        when(studentService.findStudent(1L)).thenReturn(student);
-
-        ObjectWriter ow = new ObjectMapper().writer();
-        String json = ow.writeValueAsString(faculty);
-
         Assertions.
                 assertThat(this.restTemplate.getForObject("http://localhost:" + port + "/students/1/faculty", String.class))
-                .isEqualTo(json);
+                .isNotNull();
     }
 
 

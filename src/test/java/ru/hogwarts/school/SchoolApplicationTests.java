@@ -8,6 +8,7 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import ru.hogwarts.school.controller.AvatarController;
 import ru.hogwarts.school.controller.FacultyController;
+import ru.hogwarts.school.controller.IamWorkingNowController;
 import ru.hogwarts.school.controller.StudentController;
 import ru.hogwarts.school.model.Student;
 
@@ -26,6 +27,8 @@ class SchoolApplicationTests {
     @Autowired
     private AvatarController avatarController;
 
+    @Autowired private IamWorkingNowController iamWorkingNowController;
+
     @Autowired
     private TestRestTemplate restTemplate;
 
@@ -34,6 +37,8 @@ class SchoolApplicationTests {
         Assertions.assertThat(studentController).isNotNull();
         Assertions.assertThat(facultyController).isNotNull();
         Assertions.assertThat(avatarController).isNotNull();
+        Assertions.assertThat(iamWorkingNowController).isNotNull();
+
     }
 
     @Test
