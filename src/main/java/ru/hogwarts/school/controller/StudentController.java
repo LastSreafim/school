@@ -128,4 +128,24 @@ public class StudentController {
         return ResponseEntity.ok(studentService.getAverageAgeWithStream());
     }
 
+    @GetMapping("/print-parallel")
+    public ResponseEntity<String> printStudentsParallel() {
+        try {
+            studentService.getStudentNameParallel();
+            return ResponseEntity.ok("Student names printed in parallel.");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("An error occurred: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/print-synchronized")
+    public ResponseEntity<String> printStudentsSynchronized() {
+        try {
+            studentService.synchronizedGetStudentName();
+            return ResponseEntity.ok("Student names printed in synchronized.");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("An error occurred: " + e.getMessage());
+        }
+    }
+
 }
